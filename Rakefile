@@ -39,8 +39,6 @@ task :gemspec do
   File.open(file, "w") { |f| f.write(spec.to_ruby) }
 end
 
-task :package => :gemspec # build gemspec when packaging
-
 #
 # Build
 #
@@ -48,6 +46,8 @@ task :package => :gemspec # build gemspec when packaging
 Rake::GemPackageTask.new(spec) do |pkg|
   pkg.gem_spec = spec
 end
+
+task :package => :gemspec # build gemspec when packaging
 
 #
 # Tests
