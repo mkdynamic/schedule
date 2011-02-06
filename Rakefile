@@ -15,8 +15,8 @@ spec = Gem::Specification.new do |s|
 
   # Rdoc
   # s.has_rdoc          = true
-  # s.extra_rdoc_files  = %w(Readme.markdown)
-  # s.rdoc_options      = %w(--main Readme.markdown)
+  # s.extra_rdoc_files  = %w(README.md)
+  # s.rdoc_options      = %w(--main README.md)
 
   # Files
   s.files             = %w(Rakefile README.md) + Dir.glob("{bin,lib,test}/**/*")
