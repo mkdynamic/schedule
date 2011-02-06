@@ -15,8 +15,17 @@ module Schedule
       
       duration = with_timing do
         status = execute(@task.command) do |output|
-          output.each do |line|
-            @logger.log("#{line}")
+          buffer = ""
+          begin
+            while (buffer << output.readpartial(1024))
+              if lines = buffer.slice!(/^.*[\n\r]/m)
+                @logger.log(lines)
+              end
+            end
+          rescue EOFError
+            @logger.log(buffer)
+          ensure
+            buffer = nil
           end
         end
       end

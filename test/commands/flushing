@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+
+11.times do |i|
+  $stdout.printf("\rProgress: %s", "#{i * 10}%")
+  $stdout.flush
+  sleep 0.25
+end

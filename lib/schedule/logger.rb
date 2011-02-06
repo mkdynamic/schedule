@@ -27,9 +27,10 @@ module Schedule
       @semaphore.synchronize do
         begin
           @device.flock(File::LOCK_EX) if device_is_file?
-          lines = msg.split(/[\n\r]/)
-          @device.write(format(lines, timestamp))
-          @buffer.write(lines.join("\n") + "\n")
+          unless (lines = msg.split(/[\n\r]/)).empty?
+            @device.write(format(lines, timestamp))
+            @buffer.write(lines.join("\n") + "\n")
+          end
         ensure
           @device.flock(File::LOCK_UN) if device_is_file? rescue nil
         end

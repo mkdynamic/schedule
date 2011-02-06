@@ -45,6 +45,19 @@ class RunnerTest < Test::Unit::TestCase
     end
   end
   
+  context "a command which uses carriage returns to seperate lines" do
+    setup do
+      @task = Schedule::Task.new("Flushing", File.expand_path("../../commands/flushing", __FILE__))
+      @runner = Schedule::Runner.new(@task)
+    end
+    
+    should "return 0" do
+      silence_stream(STDOUT) do
+        assert_equal 0, @runner.run
+      end
+    end
+  end
+  
   context "a command that raises an exception" do
     setup do
       @file = Tempfile.new("log")
