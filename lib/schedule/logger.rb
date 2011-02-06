@@ -2,19 +2,19 @@ require "thread"
 require "stringio"
 
 module Schedule
-  # TODO buffer to tmp file, then write the whole thing to the main log on close
-  # Unbuffered, thread and multiprocess safe
   class Logger
     attr_reader :buffer
     
     def initialize(device, prefix)
       @buffer = StringIO.new
       
-      if device.respond_to?(:write)
+      if device == STDOUT
         @device = device
-      else
+      elsif device.is_a?(String)
         @device = File.open(device, File::WRONLY | File::APPEND | File::CREAT)
         @device.sync = true
+      else
+        raise ArgumentError, "Log device must be a file path or STDOUT"
       end
       
       @prefix = prefix

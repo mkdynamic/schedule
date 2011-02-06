@@ -26,6 +26,7 @@ spec = Gem::Specification.new do |s|
   # Dependencies
   s.required_rubygems_version = Gem::Requirement.new(">= 1.3")
   s.add_development_dependency("shoulda")
+  s.add_development_dependency("timecop")
 end
 
 #
