@@ -7,7 +7,7 @@ task :default => :test
 
 spec = Gem::Specification.new do |s|
   s.name              = "schedule"
-  s.version           = "0.0.1"
+  s.version           = "0.0.2"
   s.summary           = "A Ruby replacement for Cron"
   s.author            = "Mark Dodwell"
   s.email             = "hi@mkdynamic.co.uk"
@@ -89,8 +89,9 @@ task :tag do
   if changed_files == ["Rakefile"]
     # MAGIC! automatically update Schedule::VERSION constant
     file = "lib/#{spec.name}.rb"
+    s = File.read(file)
     File.open(file, "w") do |f|
-      f.write(File.read(file).gsub(/^(\s*)VERSION(\s*)=(\s*)(["'])[\d\.]+(['"])(\s*)$/, %{\\1VERSION\\2=\\3\\4#{spec.version.to_s}\\5\\6}))
+      f.write(s.gsub(/^(\s*)VERSION(\s*)=(\s*)(["'])[\d\.]+(['"])(\s*)$/, %{\\1VERSION\\2=\\3\\4#{spec.version.to_s}\\5\\6}))
     end
     if File.read(file).match(/^\s*VERSION\s*=\s*"([\d\.]+)"\s*$/)[1] != spec.version.to_s
       "VERSION constant in #{file} differs from gemspec version."
