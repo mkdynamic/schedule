@@ -6,8 +6,6 @@ module Schedule
     attr_reader :buffer
     
     def initialize(device, prefix)
-      @buffer = StringIO.new
-      
       if device == STDOUT
         @device = device
       elsif device.is_a?(String)
@@ -17,6 +15,8 @@ module Schedule
         raise ArgumentError, "Log device must be a file path or STDOUT"
       end
       
+      @formatter ||= Proc.new { |line, timestamp| "#{timestamp.strftime("%Y-%m-%d %H:%M:%S")} [#{@prefix}] #{line}" }
+      @buffer = StringIO.new
       @prefix = prefix
       @semaphore = Mutex.new
     end
@@ -27,9 +27,8 @@ module Schedule
       @semaphore.synchronize do
         begin
           @device.flock(File::LOCK_EX) if device_is_file?
-          formatted_msg = format(msg, timestamp)
-          @device.write(formatted_msg)
-          @buffer.write(formatted_msg)
+          @device.write(format(msg, timestamp))
+          @buffer.write(msg)
         ensure
           @device.flock(File::LOCK_UN) if device_is_file? rescue nil
         end
@@ -43,9 +42,7 @@ module Schedule
     private
 
     def format(msg, timestamp)
-      msg.split(/[\n\r]/).map { |line| 
-        "#{timestamp.strftime("%Y-%m-%d %H:%M:%S")} [#{@prefix}] #{line.chomp}" 
-      }.join("\n") + "\n"
+      msg.split(/[\n\r]/).map { |line| @formatter.call(line, timestamp) }.join("\n") + "\n"
     end
 
     def device_is_file?
