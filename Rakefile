@@ -7,7 +7,7 @@ task :default => :test
 
 spec = Gem::Specification.new do |s|
   s.name              = "schedule"
-  s.version           = "0.0.2"
+  s.version           = "0.0.3"
   s.summary           = "A Ruby replacement for Cron"
   s.author            = "Mark Dodwell"
   s.email             = "hi@mkdynamic.co.uk"
