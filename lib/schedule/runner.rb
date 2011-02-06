@@ -1,3 +1,5 @@
+require "schedule/logger"
+
 module Schedule
   class Runner
     def initialize(task, logger = nil, notifier = nil)
@@ -36,6 +38,8 @@ module Schedule
       if @notifier
         @notifier.notify("[Cron] #{@task.name}", @logger.buffer.string)
       end
+      
+      return exit_status
     end
 
     private
