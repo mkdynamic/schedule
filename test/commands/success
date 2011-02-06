@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+`touch #{ARGV.first}`
+puts "Running command..."
+puts "done."

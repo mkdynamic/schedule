@@ -1,0 +1,16 @@
+#!/usr/bin/env ruby
+
+begin
+  require "schedule"
+rescue LoadError
+  $:.unshift(File.expand_path("../../lib", __FILE__))
+  puts File.expand_path("../../lib", __FILE__)
+  require "schedule"
+end
+
+command = ARGV.first
+task = Schedule::Task.new("", command)
+
+exit_status = Schedule::Runner.new(task).run
+
+exit(exit_status)
