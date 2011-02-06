@@ -80,7 +80,7 @@ end
 
 desc "Tag the repository in git with gem version number"
 task :tag do
-  `git fetch --tags`
+  #`git fetch --tags`
   if `git tag`.split("\n").include?("v#{spec.version}")
     raise "Version #{spec.version} has already been released."
   end
@@ -102,13 +102,13 @@ task :tag do
     `git add #{File.expand_path("../#{spec.name}.gemspec", __FILE__)} Rakefile lib/schedule.rb`
     `git commit -m "prepare version #{spec.version}"`
     `git tag v#{spec.version}`
-    `git push --tags`
-    `git push`
+    #`git push --tags`
+    #`git push`
   else
     raise "Repository contains uncommitted changes; either commit or stash."
   end
 end
-# 
+
 # desc "Tag and publish the gem to rubygems.org"
 # task :publish => :tag do
 #   `gem push pkg/#{spec.name}-#{spec.version}.gem`
