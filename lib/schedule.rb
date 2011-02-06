@@ -4,5 +4,5 @@ require "schedule/logger"
 require "schedule/runner"
 
 module Schedule
-  VERSION = "0.0.3"
+  VERSION = "0.0.1"
 end
