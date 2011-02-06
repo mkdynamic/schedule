@@ -80,21 +80,26 @@ end
 
 desc "Tag the repository in git with gem version number"
 task :tag do
+  `git fetch --tags`
+  if `git tag`.split("\n").include?("v#{spec.version}")
+    raise "Version #{spec.version} has already been released."
+  end
+  
   changed_files = `git diff --cached --name-only`.split("\n") + `git diff --name-only`.split("\n")
   if changed_files == ["Rakefile"]
-    if File.read("lib/schedule.rb").match(/^\s*VERSION\s*=\s*"([\d\.]+)"\s*$/)[1] != spec.version.to_s
-      puts spec.version.inspect
-      puts File.read("lib/schedule.rb").match(/^\s*VERSION\s*=\s*"([\d\.]+)"\s*$/)[1].inspect
-      raise "Schedule::VERSION differs from gemspec version."
+    # MAGIC! automatically update Schedule::VERSION constant
+    file = "lib/#{spec.name}.rb"
+    File.open(file, "w") do |f|
+      f.write(File.read(file).gsub(/^(\s*)VERSION(\s*)=(\s*)(["'])[\d\.]+(['"])(\s*)$/, %{\\1VERSION\\2=\\3\\4#{spec.version.to_s}\\5\\6}))
+    end
+    if File.read(file).match(/^\s*VERSION\s*=\s*"([\d\.]+)"\s*$/)[1] != spec.version.to_s
+      "VERSION constant in #{file} differs from gemspec version."
     end
     
     Rake::Task["package"].invoke
-  
-    if `git tag`.split("\n").include?("v#{spec.version}")
-      raise "Version #{spec.version} has already been released."
-    end
-    `git add #{File.expand_path("../#{spec.name}.gemspec", __FILE__)} Rakefile`
-    `git commit -m "released version #{spec.version}"`
+    
+    `git add #{File.expand_path("../#{spec.name}.gemspec", __FILE__)} Rakefile lib/schedule.rb`
+    `git commit -m "prepare version #{spec.version}"`
     `git tag v#{spec.version}`
     `git push --tags`
     `git push`
