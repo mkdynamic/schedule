@@ -39,8 +39,7 @@ else
 end
 
 notifier = if options[:email]
-  Schedule::Notifier::Email.new({ 
-    :from => options[:email], 
+  Schedule::Notifier::Email.new({
     :to => options[:email]
   })
 else
