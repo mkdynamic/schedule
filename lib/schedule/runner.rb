@@ -23,7 +23,7 @@ module Schedule
               end
             end
           rescue EOFError
-            @logger.log(buffer)
+            @logger.log(buffer) unless buffer == ""
           ensure
             buffer = nil
           end

@@ -3,6 +3,8 @@ require "stringio"
 
 module Schedule
   class Logger
+    LINE_SEPERATOR = /\r\n|\n|\r/ # CRLF, LF or CR
+    
     attr_reader :buffer
     
     def initialize(device, prefix)
@@ -15,7 +17,7 @@ module Schedule
         raise ArgumentError, "Log device must be a file path or STDOUT"
       end
       
-      @formatter ||= Proc.new { |line, timestamp| "#{timestamp.strftime("%Y-%m-%d %H:%M:%S")} [#{@prefix}] #{line}" }
+      @formatter = Proc.new { |line, timestamp| "#{timestamp.strftime("%Y-%m-%d %H:%M:%S")} [#{@prefix}] #{line}" }
       @buffer = StringIO.new
       @prefix = prefix
       @semaphore = Mutex.new
@@ -24,15 +26,19 @@ module Schedule
     def log(msg)
       timestamp = Time.now
       
-      @semaphore.synchronize do
-        begin
+      # split into lines, preserving whitespace
+      lines = msg.split(LINE_SEPERATOR)
+      msg.scan(LINE_SEPERATOR).size.times { lines << "\n" } if lines.empty?
+      
+      unless lines.empty?
+        @semaphore.synchronize do
           @device.flock(File::LOCK_EX) if device_is_file?
-          unless (lines = msg.split(/[\n\r]/)).empty?
-            @device.write(format(lines, timestamp))
+          begin
+            @device.write(lines.map { |line| @formatter.call(line, timestamp) }.join("\n") + "\n")#
             @buffer.write(lines.join("\n") + "\n")
+          ensure
+            @device.flock(File::LOCK_UN) if device_is_file?
           end
-        ensure
-          @device.flock(File::LOCK_UN) if device_is_file? rescue nil
         end
       end
     end
@@ -42,10 +48,6 @@ module Schedule
     end
 
     private
-
-    def format(lines, timestamp)
-      lines.map { |line| @formatter.call(line, timestamp) }.join("\n") + "\n"
-    end
 
     def device_is_file?
       @device_is_file ||= @device.is_a?(File)
