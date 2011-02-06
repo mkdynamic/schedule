@@ -1,16 +1,47 @@
 #!/usr/bin/env ruby
 
-begin
-  require "schedule"
-rescue LoadError
-  $:.unshift(File.expand_path("../../lib", __FILE__))
-  puts File.expand_path("../../lib", __FILE__)
-  require "schedule"
+lib = File.expand_path(File.dirname(__FILE__) + "/../lib")
+$LOAD_PATH.unshift(lib) if File.directory?(lib) && !$LOAD_PATH.include?(lib)
+
+require "schedule/task"
+require "schedule/runner"
+require "schedule/notifier"
+require "schedule/logger"
+
+def invalid_arg!(arg, options, command)
+  raise "Invalid argument: #{options.inspect} / #{command.inspect} / #{arg.inspect}"
 end
 
-command = ARGV.first
-task = Schedule::Task.new("", command)
+args = ARGV.dup
+command = nil
+options = {}
+until args.empty? do
+  case (arg = args.shift.strip)
+  when /^[^\-]/ 
+    invalid_arg!(arg, options, command) unless command.nil?
+    command = arg
+  when "-n", "--name" then options[:name] = args.shift
+  when "-l", "--log" then options[:log] = args.shift
+  when "-e", "--email" then options[:email] = args.shift
+  when "--" # noop
+  else invalid_arg!(arg, options, command)
+  end
+end
 
-exit_status = Schedule::Runner.new(task).run
+raise "Did not pass any command to run" unless command
 
-exit(exit_status)
+task = Schedule::Task.new(options[:name], command)
+
+logger = if options[:log]
+  Schedule::Logger.new(options[:log], options[:name])
+else
+  nil
+end
+
+notifier = if options[:email]
+  Schedule::Notifier::Email.new(options[:email], options[:email])
+else
+  nil
+end
+
+exit Schedule::Runner.new(task, logger, notifier).run
