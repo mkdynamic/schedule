@@ -36,7 +36,7 @@ module Schedule
       end
       
       if @notifier
-        @notifier.notify("[Cron] #{@task.name}", @logger.buffer.string)
+        @notifier.notify(@task, @logger.buffer.string)
       end
       
       return exit_status
@@ -44,7 +44,7 @@ module Schedule
 
     private
 
-    # executes system command as a child process
+    # executes system command as a child process (fork + exec)
     # returns stdout and stderr as a single stream
     # will execute code inside block
     def execute(cmd)
@@ -53,7 +53,7 @@ module Schedule
       begin
         pipe = IO::pipe
         
-        pid = fork {
+        pid = fork do
           pipe[0].close
           STDOUT.reopen(pipe[1])
           pipe[1].close
@@ -69,7 +69,7 @@ module Schedule
             STDERR.puts "Error running command: #{e.to_s} (#{e.class.name})"#\n#{e.backtrace.map { |l| "    from #{l}" }.join("\n")}"
             exit(1)
           end
-        }
+        end
 
         pipe[1].close
         

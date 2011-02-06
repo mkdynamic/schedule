@@ -23,7 +23,7 @@ class RunnerTest < Test::Unit::TestCase
     should "execute command" do
       silence_stream(STDOUT) do
         @runner.run
-        assert_equal "#{File.expand_path(File.dirname(__FILE__))}\n", File.read(@path)
+        assert_equal `pwd`, File.read(@path)
       end
     end
     
@@ -52,7 +52,7 @@ class RunnerTest < Test::Unit::TestCase
       @file.close
       @file.unlink
       
-      @task = Schedule::Task.new("Test", "../commands/raises_exception #{@path}")
+      @task = Schedule::Task.new("Test", File.expand_path("../../commands/raises_exception #{@path}", __FILE__))
       @runner = Schedule::Runner.new(@task)
     end
     

@@ -10,9 +10,9 @@ class BinaryTest < Test::Unit::TestCase
         @file.close
         @file.unlink
 
-        command_to_run_path = File.expand_path("../commands/success")
+        command_to_run_path = File.expand_path("../../commands/success", __FILE__)
         @command_to_run = "#{command_to_run_path} #{@path}"
-        @command_runner_path = File.expand_path("../../bin/cr")
+        @command_runner_path = File.expand_path("../../../bin/cr", __FILE__)
       end
       
       context "no options" do
