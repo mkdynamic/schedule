@@ -27,8 +27,9 @@ module Schedule
       @semaphore.synchronize do
         begin
           @device.flock(File::LOCK_EX) if device_is_file?
-          @device.write(format(msg, timestamp))
-          @buffer.write(msg)
+          lines = msg.split(/[\n\r]/)
+          @device.write(format(lines, timestamp))
+          @buffer.write(lines.join("\n") + "\n")
         ensure
           @device.flock(File::LOCK_UN) if device_is_file? rescue nil
         end
@@ -41,8 +42,8 @@ module Schedule
 
     private
 
-    def format(msg, timestamp)
-      msg.split(/[\n\r]/).map { |line| @formatter.call(line, timestamp) }.join("\n") + "\n"
+    def format(lines, timestamp)
+      lines.map { |line| @formatter.call(line, timestamp) }.join("\n") + "\n"
     end
 
     def device_is_file?
